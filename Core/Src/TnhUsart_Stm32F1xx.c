@@ -4,6 +4,13 @@
  *  Created on: 2019. 11. 9.
  *      Author: HCLIM
  */
+
+//-----------------------------------------------------------
+/* Version Management */
+//Ver1.0 2022.03.12 STM32 1차 검증 완료
+
+
+//-----------------------------------------------------------
 #include "TnhUsart_Stm32F1xx.h"
 //------------------------------------------------------------
 //-------------TNH USART Basic Function-----------------------
@@ -44,10 +51,28 @@ void Usart_RxRcvd_MoveToBuf(USART_TypeDef *USARTx,_USART_BUF *pUsartBuf)
 {
 	//UART로 입력된 One Data를 Buffer로 이동하고 Buf의 포인트는 다음 Data를 저장할 위치를 지정하게 한다.
 	//Buffer가 차게된면 초기 위치을 가리키게된다. -> Buffer의  Data 로테이션 처리
+	uint8_t bufPos;
+	uint8_t bufPosNext;
+	uint8_t by;
 
-	pUsartBuf->byRxBuf[pUsartBuf->byRxBufPos]=LL_USART_ReceiveData8(USARTx);
-	pUsartBuf->byRxBufPos++;
-	if (pUsartBuf->byRxBufPos>=RX1BUF_SIZE) pUsartBuf->byRxBufPos=0;
+	by=LL_USART_ReceiveData8(USARTx);
+
+	bufPos=pUsartBuf->byRxBufPos;
+
+	bufPosNext = bufPos+1;
+	if (bufPosNext>=RX1BUF_SIZE) bufPosNext=0;
+
+	if (bufPosNext==pUsartBuf->byRxBufStPos) {
+		//Buffer Full
+		//---Rcvd Data 갯수가 RX1BUF_SIZE-1 만큼 차면 RX overflow 처리
+		FlagUsartStat |= 0x01;
+	} else {
+		//Send Rcvd Data to buffer
+		pUsartBuf->byRxBuf[bufPos]=by;
+		pUsartBuf->byRxBufPos = bufPosNext;
+		FlagUsartStat &= 0xFE;
+	}
+
 }
 //------------------------------------------------------------
 uint8_t Usart_RxRcvd_Length(_USART_BUF *pUsartBuf)
@@ -134,6 +159,7 @@ char Usart_WriteDataByTXE(USART_TypeDef *USARTx, unsigned char *data, unsigned c
 			}
 		else return -1;	//전송Data 초과오류
 	}
+	//현재 TxE에 의한 전송이 이루어지고 있으면 끝날때까지 대기
 #if INTTX_AFTER_EMPTY
 	while (1) {
 		if (pUsartBuf->byTxBufPos==pUsartBuf->byTxBufStPos) break;
@@ -146,6 +172,28 @@ char Usart_WriteDataByTXE(USART_TypeDef *USARTx, unsigned char *data, unsigned c
 	}
 	LL_USART_EnableIT_TXE(USARTx);
 	return 0;
+}
+
+//------------------------------------------------------------
+//USART_BUF의 byTxBuf[]를 TXE interrupt를 이용하여 전송
+char Usart_WriteBufByTXE(USART_TypeDef *USARTx)
+{
+
+	_USART_BUF *pUsartBuf;
+	if (USARTx==USART3) pUsartBuf=&StUart1;
+	else if (USARTx==USART2) pUsartBuf=&StUart2;
+	else if (USARTx==USART3) pUsartBuf=&StUart3;
+
+	//현재 TxE에 의한 전송이 이루어지고 있으면 끝날때까지 대기
+#if INTTX_AFTER_EMPTY
+	while (1) {
+		if (pUsartBuf->byTxBufPos==pUsartBuf->byTxBufStPos) break;
+	}
+#endif
+
+	LL_USART_EnableIT_TXE(USARTx);
+	return 0;
+
 }
 
 /*

@@ -30,6 +30,7 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx_ll_i2c.h"
+#include "stm32f1xx_ll_tim.h"
 #include "stm32f1xx_ll_usart.h"
 #include "stm32f1xx_ll_rcc.h"
 #include "stm32f1xx_ll_bus.h"
@@ -72,6 +73,22 @@ void Error_Handler(void);
 
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN Private defines */
+uint8_t PMode;
+uint8_t FlagSys;
+uint8_t FlagErr;
+uint16_t SystemCnt;
+uint8_t ByBuf[256];
+
+//-------Accelerometer----
+uint8_t ByAccValue[6];
+uint16_t IAccValueX;
+uint16_t IAccValueY;
+uint16_t IAccValueZ;
+//-----------------------
+void TIM3_ISR();
+
+void MainProcess(void);
+
 
 /* USER CODE END Private defines */
 
