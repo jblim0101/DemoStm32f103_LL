@@ -18,8 +18,8 @@
   */
 /* Version Management */
 /**
- //Ver0.1  2022.03.11 Usart2�?????? ?��?��?�� Data�?????? Usart3?���?????? ?��?�� ?���??????
- //Ver0.1  2022.03.11 TX & RX모두 ?��?��?��?�� 처리
+ //Ver0.1  2022.03.11 Usart2로 전송한 Data를 Usart3으로 수신 완료
+ //Ver0.1  2022.03.11 TX & RX모두 인터럽트 처리
 */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
@@ -180,15 +180,15 @@ int main(void)
   MX_USB_PCD_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  //lkjc USART1 RxPin Floating?���?????? ?��?�� ?��?�� 무한반복 방�?
-  LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_10, LL_GPIO_MODE_INPUT);
-  LL_GPIO_SetPinPull(GPIOA, LL_GPIO_PIN_10, LL_GPIO_PULL_UP);
-  //lkjc USART2 RxPin Floating?���?????? ?��?�� ?��?�� 무한반복 방�?
-  LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_3, LL_GPIO_MODE_INPUT);
-  LL_GPIO_SetPinPull(GPIOA, LL_GPIO_PIN_3, LL_GPIO_PULL_UP);
-  //lkjc USART3 RxPin Floating?���?????? ?��?�� ?��?�� 무한반복 방�?
-  LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_11, LL_GPIO_MODE_INPUT);
-  LL_GPIO_SetPinPull(GPIOB, LL_GPIO_PIN_11, LL_GPIO_PULL_UP);
+  //lkjc USART1 RxPin Floating으로 인한 입력 무한반복 방지
+	LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_10, LL_GPIO_MODE_INPUT);
+	LL_GPIO_SetPinPull(GPIOA, LL_GPIO_PIN_10, LL_GPIO_PULL_UP);
+	//lkjc USART2 RxPin Floating으로 인한 입력 무한반복 방지
+	LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_3, LL_GPIO_MODE_INPUT);
+	LL_GPIO_SetPinPull(GPIOA, LL_GPIO_PIN_3, LL_GPIO_PULL_UP);
+	//lkjc USART3 RxPin Floating으로 인한 입력 무한반복 방지
+	LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_11, LL_GPIO_MODE_INPUT);
+	LL_GPIO_SetPinPull(GPIOB, LL_GPIO_PIN_11, LL_GPIO_PULL_UP);
 
   HAL_Delay(10);
   Mma8452_InitForAccMode(MAX4G_8452);
